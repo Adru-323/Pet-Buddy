@@ -24,11 +24,16 @@ connectDB();
 const app = express();
 
 // 2. Add Middleware SECOND
-// app.use(cors()); 
-app.use(cors({
-  origin: "https://yourdomain.com",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://pet-buddy.live",
+      "https://www.pet-buddy.live",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json()); 
 
 // 3. Mount all Routes THIRD (including Admin)
