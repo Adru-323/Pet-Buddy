@@ -1,9 +1,10 @@
 const User = require('../models/User');
 const Pet = require('../models/Pet');
 const Booking = require('../models/Booking');
-const { createNotification } = require('./notificationController'); 
-// @desc    Get dashboard stats
-// @route   GET /api/admin/stats
+const { createNotification } = require('./notificationController');
+const { sendMail } = require('../services/emailService');
+const { bookingStatusUpdate } = require('../services/emailTemplates');
+
 const getAdminStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: 'customer' });
@@ -18,8 +19,6 @@ const getAdminStats = async (req, res) => {
   }
 };
 
-// @desc    Get all users
-// @route   GET /api/admin/users
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select('-password');
@@ -29,8 +28,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// @desc    Delete a user
-// @route   DELETE /api/admin/users/:id
 const deleteUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -38,7 +35,6 @@ const deleteUser = async (req, res) => {
       if (user.role === 'admin') {
         return res.status(400).json({ message: 'Cannot delete admin user' });
       }
-      // Delete user's pets and bookings to prevent orphaned data
       await Pet.deleteMany({ owner: user._id });
       await Booking.deleteMany({ customer: user._id });
       await user.deleteOne();
@@ -51,8 +47,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Get all bookings
-// @route   GET /api/admin/bookings
 const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({})
@@ -65,23 +59,34 @@ const getAllBookings = async (req, res) => {
   }
 };
 
-// @desc    Update booking status
-// @route   PUT /api/admin/bookings/:id/status
 const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const booking = await Booking.findById(req.params.id);
+    const booking = await Booking.findById(req.params.id).populate('pet', 'petName petType');
 
     if (booking) {
       booking.status = status;
       const updatedBooking = await booking.save();
 
       let message = `Your booking for ${booking.serviceType} has been updated to ${status}.`;
-      let type = 'Booking Completed'; // Default fallback
+      let type = 'Booking Completed';
       if (status === 'approved') type = 'Booking Approved';
       if (status === 'rejected') type = 'Booking Rejected';
-      
+
       await createNotification(booking.customer, type, message, booking._id);
+
+      try {
+        const user = await User.findById(booking.customer);
+        await sendMail({
+          to: user.email,
+          subject: `📋 Booking ${status.charAt(0).toUpperCase() + status.slice(1)} — Pet Buddy`,
+          html: bookingStatusUpdate(updatedBooking, user.name, status),
+        });
+        console.log(`✅ Status update email sent to ${user.email}`);
+      } catch (emailError) {
+        console.error('❌ Email failed (status still updated):', emailError.message);
+      }
+
       res.json(updatedBooking);
     } else {
       res.status(404).json({ message: 'Booking not found' });
@@ -91,8 +96,6 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
-// @desc    Delete a booking
-// @route   DELETE /api/admin/bookings/:id
 const deleteBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
