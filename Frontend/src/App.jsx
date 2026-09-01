@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+
 // Auth Pages & Components
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
+
 // Pet Management Pages
 import PetList from './pages/PetList';
 import AddPet from './pages/AddPet';
@@ -14,14 +16,18 @@ import EditPet from './pages/EditPet';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageBookings from './pages/ManageBookings';
 import ManageUsers from './pages/ManageUsers';
+
 // Booking System Pages
 import BookService from './pages/BookService';
 import BookingHistory from './pages/BookingHistory';
 import BookingDetails from './pages/BookingDetails';
-// home
+
+// Home & Pricing
 import Home from './pages/Home';
-//admin pricing 
 import AdminPricing from './pages/AdminPricing';
+
+// 404 Page
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -29,15 +35,12 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          {/* Default Route - Redirects straight to Login */}
-          {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/*Admin pricing */}
-        <Route path="/admin/pricing" element={<AdminPricing />} />
-
-
-          {/* Dashboard Route */}
+          {/* User Protected Routes */}
           <Route 
             path="/dashboard" 
             element={
@@ -46,38 +49,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
-          {/* Admin Routes */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute adminOnly={true}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/bookings" 
-            element={
-              <ProtectedRoute adminOnly={true}>
-                <ManageBookings />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/admin/users" 
-            element={
-              <ProtectedRoute adminOnly={true}>
-                <ManageUsers />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Protected Routes - User must be logged in */}
           <Route 
             path="/profile" 
             element={
@@ -86,8 +57,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
-          {/* Pet Routes */}
           <Route 
             path="/pets" 
             element={
@@ -112,8 +81,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
-          {/* Booking Routes */}
           <Route 
             path="/book" 
             element={
@@ -138,7 +105,43 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          
+
+          {/* Admin Protected Routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/pricing" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <AdminPricing />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bookings" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <ManageBookings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <ManageUsers />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Catch-all Wildcard Route for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>
