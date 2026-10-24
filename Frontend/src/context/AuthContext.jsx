@@ -11,7 +11,8 @@ export const AuthProvider = ({ children }) => {
   // axios.defaults.baseURL = 'http://localhost:5000'; 
  // axios.defaults.baseURL =
  //  "https://pet-buddy-backend-26su.onrender.com";
- axios.defaults.baseURL = "pet-buddy-geababgqauandtg5.uaenorth-01.azurewebsites.net";
+axios.defaults.baseURL =
+  "https://pet-buddy-geababgqauandtg5.uaenorth-01.azurewebsites.net";
 
 
 
